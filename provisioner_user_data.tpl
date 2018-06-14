@@ -24,8 +24,8 @@ write_files:
     content: |
       [ec2]
 
-      regions = us-east-1
-      regions_exclude = us-gov-west-1, cn-north-1
+      regions = ${region}
+      regions_exclude = us-gov-west-1, cn-north-1, cn-northwest-1
 
       destination_variable = private_dns_name
       vpc_destination_variable = private_ip_address
@@ -171,6 +171,9 @@ write_files:
       # If ansible_ssh_user is not root, ansible_become must be set to true
       ansible_become=true
 
+      # Was agreen that service catalog is not required for HS usage
+      openshift_enable_service_catalog=false
+
       openshift_deployment_type=origin
 
       [tag_aws_autoscaling_groupName_${master_asg_name}]
@@ -215,7 +218,7 @@ runcmd:
   - git clone -b release-3.9 https://github.com/openshift/openshift-ansible
   - wget -O /var/provisioner/ec2.py https://raw.githubusercontent.com/ansible/ansible/devel/contrib/inventory/ec2.py 
   - wget -O /bin/jq https://github.com/stedolan/jq/releases/download/jq-1.5/jq-linux64 && chmod +x /bin/jq
-  - yum install -y https://s3-${region}.amazonaws.com/amazon-ssm-${region}/latest/linux_amd64/amazon-ssm-agent.rpm && systemctl start amazon-ssm-agent && systemctl enable amazon-ssm-agent
+  - yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm && systemctl start amazon-ssm-agent && systemctl enable amazon-ssm-agent
   - chmod +x /var/provisioner/ec2.py /bin/provisioner.sh
   - curl -O https://bootstrap.pypa.io/get-pip.py && python get-pip.py && pip install awscli boto boto3 && pip2 install awscli boto boto3
   - ssh-keygen -t rsa -N "" -f /root/.ssh/id_rsa && rm -f /root/.ssh/id_rsa.pub
